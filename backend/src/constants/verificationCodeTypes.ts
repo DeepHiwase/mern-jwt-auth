@@ -5,9 +5,9 @@
  * in the code, but i think its also not good idea to use const enums
  */
 
-const enum VerificationCodeTypes {
+const enum VerificationCodeType {
   EmailVerification = "email_verification",
   PasswordReset = "password_reset",
 }
 
-export default VerificationCodeTypes;
+export default VerificationCodeType;

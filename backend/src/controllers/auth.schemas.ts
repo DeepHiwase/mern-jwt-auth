@@ -20,3 +20,8 @@ export const registerSchema = loginSchema
   });
 
 export const verificationCodeSchema = z.string().min(1).max(24); // as mongodb object can't be greater than 24
+
+export const resetPasswordSchema = z.object({
+  verificationCode: verificationCodeSchema,
+  password: passwordSchema,
+});
