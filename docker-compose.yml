@@ -1,0 +1,70 @@
+# name for application
+name: mern-app
+
+# services -> all containers that we want to run our app
+services:
+  # All containers that need
+  mongo:
+    image: mongo:7.0.12
+    # remove ports in prod as do not want to expose to VPS, it will be still connected to containers throudh docker network
+    ports:
+      - 27017:27017
+    # name of volume is "mongo_data" -> telling docker to manage that even if the container is stop, /data/db is path where data will be store on container
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - mern-app
+
+  api:
+    # build first like if we do if single dockerfile for docker build ./
+    build:
+      # from where to build for api named container
+      context: ./backend
+      # Which dockerfile to run if multiple Dockerfile is present like for dev mode Dockerfile.dev
+      dockerfile: Dockerfile
+    # so that it should be manually restart if stop or crached
+    restart: unless-stopped
+    # load env from path for api container
+    env_file: ./backend/.env
+    # to stores files on container volumes, format - from_where_the_files_to_put/where_to_put_those_files_in_container_volume
+    volumes:
+      - ./backend:/app
+      # ignore node_modules that is on host machine and only use the node_modules that is on container / this node modules never be
+      # never be update on container
+      - /app/node_modules
+    networks:
+      - mern-app
+    # map port -> host_machine_port:container_port on which api running or spinup
+    ports:
+      - 4004:4004
+    # wait until mongo starts as it depends on mongo to connect, "mongo" is service name
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      # make sure to not override nodemodules
+      - /app/nodemodules
+    networks:
+      - mern-app
+    ports:
+      - 5173:5173
+    # add same command from Dockerfile as docker was not allowing giving not found
+    command: npm run dev -- --host
+    depends_on:
+      - api
+
+# creates a volume on docker name "mongo_data", it will be auto manage and create on docker
+volumes:
+  mongo_data:
+# creates a network name "mern-app" driver bridge, put this network name in services that u want to connet to each other in same network
+networks:
+  mern-app:
+    driver: bridge
