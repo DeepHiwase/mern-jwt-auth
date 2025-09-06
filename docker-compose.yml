@@ -61,9 +61,25 @@ services:
     depends_on:
       - api
 
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - 80:80 # 80 default port for http
+      - 443:443 # 443 for https
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - mern-app
+    depends_on:
+      - api
+      - frontend
+
 # creates a volume on docker name "mongo_data", it will be auto manage and create on docker
 volumes:
   mongo_data:
+  caddy_data:
+  caddy_config:
 # creates a network name "mern-app" driver bridge, put this network name in services that u want to connet to each other in same network
 networks:
   mern-app:
